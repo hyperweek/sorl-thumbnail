@@ -1,9 +1,27 @@
 import re
 import os
-
+from django.db import models
 
 re_thumbnail_file = re.compile(r'(?P<source_filename>.+)_(?P<x>\d+)x(?P<y>\d+)(?:_(?P<options>\w+))?_q(?P<quality>\d+)(?:.[^.]+)?$')
 
+def remove_model_thumbnails(sender, instance, *args, **kwargs):
+    """Remove all thumbnails for all ImageFields (and subclasses) in the model 
+    
+    To be used with signals on models which use thumbnail tags.
+
+    Signals are used instead of overiding the delete() method because
+    the delete() method is not always called, e.g. when calling delete()
+    on a queryset.
+
+    To attach to a model:
+
+        signals.pre_delete.connect(remove_model_thumbnails, sender=Photo)
+    """
+
+    for field in instance._meta.fields:
+        if isinstance(field, models.ImageField):
+            relative_source_path = getattr(instance, field.name).name
+            delete_thumbnails(relative_source_path)
 
 def all_thumbnails(path, recursive=True, prefix=None, subdir=None):
     """

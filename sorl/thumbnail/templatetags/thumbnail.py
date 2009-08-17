@@ -1,8 +1,6 @@
 import re
 import math
-from django.template import Library, Node, Variable, VariableDoesNotExist, TemplateSyntaxError
-from django.conf import settings
-from django.utils.encoding import force_unicode
+from django.template import Library, Node, VariableDoesNotExist, TemplateSyntaxError
 from sorl.thumbnail.main import DjangoThumbnail, get_thumbnail_setting
 from sorl.thumbnail.processors import dynamic_import, get_valid_options
 
