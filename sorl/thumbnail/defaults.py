@@ -12,3 +12,6 @@ PROCESSORS = (
     'sorl.thumbnail.processors.scale_and_crop',
     'sorl.thumbnail.processors.filters',
 )
+
+from django.conf import settings
+USE_S3 = settings.DEFAULT_FILE_STORAGE == 'backends.S3Storage.S3Storage'

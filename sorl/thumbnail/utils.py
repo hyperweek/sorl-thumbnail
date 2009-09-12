@@ -1,8 +1,33 @@
 import re
 import os
 from django.db import models
+from sorl.thumbnail import defaults
+from django.conf import settings
 
 re_thumbnail_file = re.compile(r'(?P<source_filename>.+)_(?P<x>\d+)x(?P<y>\d+)(?:_(?P<options>\w+))?_q(?P<quality>\d+)(?:.[^.]+)?$')
+
+if defaults.USE_S3:
+    import backends.s3 as s3
+
+def push_to_s3(file_path):
+    s3_storage = s3.S3Storage()
+    img_file = open("%s%s" % (settings.MEDIA_ROOT, file_path),'r')
+    s3_img_file = s3_storage.open("%s" % (file_path), 'w')
+    s3_img_file.write(img_file.read())
+    img_file.close()
+    s3_img_file.close()
+
+def is_on_s3(file_path):
+    s3_storage = s3.S3Storage() 
+    return s3_storage.exists(file_path)
+    
+def pull_from_s3(file_path):
+    s3_storage = s3.S3Storage()     
+    img_file = open("%s%s" % (settings.MEDIA_ROOT, file_path),'w')
+    s3_img_file = s3_storage.open(file_path, 'r')
+    img_file.write(s3_img_file.read())
+    s3_img_file.close()
+    img_file.close()
 
 def remove_model_thumbnails(sender, instance, *args, **kwargs):
     """Remove all thumbnails for all ImageFields (and subclasses) in the model 

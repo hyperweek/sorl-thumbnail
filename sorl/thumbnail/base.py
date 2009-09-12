@@ -4,15 +4,16 @@ from tempfile import mkstemp
 from shutil import copyfile
 from subprocess import Popen, PIPE
 
-from PIL import Image, ImageFilter
+from PIL import Image
 
 from sorl.thumbnail import defaults
 from sorl.thumbnail.processors import get_valid_options, dynamic_import
 
+if defaults.USE_S3:
+    from utils import push_to_s3, is_on_s3, pull_from_s3
 
 class ThumbnailException(Exception):
     pass
-
 
 class Thumbnail(object):
     def __init__(self, source, requested_size, opts=None, quality=85,
@@ -64,6 +65,7 @@ class Thumbnail(object):
             # We'll assume dest is a file-like instance if it exists but isn't
             # a string.
             self._do_generate()
+            
         elif not isfile(self.dest) or (self.source_exists and
             getmtime(self.source) > getmtime(self.dest)):
 
@@ -73,6 +75,71 @@ class Thumbnail(object):
                 os.makedirs(directory)
 
             self._do_generate()
+
+    def generate_s3(self):
+        """
+        Generates an s3 thumbnail if it doesn't exist or if the file date of the
+        source file is newer than that of the thumbnail.
+
+        On a page load:
+
+        1. Check to see if the thumbnail exists locally. If so, we assume it's been sent to S3 and move on.
+        2. If it's missing, we check to see if S3 has a copy. If so, we download it and move on.
+        3. If the thumb is missing, we check to see if the source image exists. If so, we make a new thumb (which uploads itself to S3), and move on.
+        4. If the source is also missing, we see if it's on S3, and if so, get it, thumb it, and push the thumb back up, and move on.
+        5. If all of that fails, somebody deleted the image, or things have gone fubar'd.
+        """
+        # Ensure dest(ination) attribute is set
+        if not self.dest:
+            raise ThumbnailException("No destination filename set.")
+        
+        new_generated = False
+        if not isinstance(self.dest, basestring):
+            # We'll assume dest is a file-like instance if it exists but isn't
+            # a string.
+            self._do_generate()
+            new_generated = True
+            
+        elif not isfile(self.dest) or (self.source_exists and
+            getmtime(self.source) > getmtime(self.dest)):
+
+            if is_on_s3(self.relative_dest):
+                # "thumb is on s3"
+                pull_from_s3(self.relative_dest)
+                self._source_exists = True
+            else:
+                # "thumb not on s3"
+                if not self.source_exists:
+                    # file's missing.
+                    if is_on_s3(self.relative_source):
+                        pull_from_s3(self.relative_source)
+                        self._source_exists = True
+                    else:
+                        # "source is not on S3!"
+                        self._source_exists = False
+
+                if self.source_exists:
+                    # Ensure the directory exists
+                    directory = dirname(self.dest)
+                    if not isdir(directory):
+                        os.makedirs(directory)
+
+                    self._do_generate()
+                    new_generated = True
+
+        if new_generated:
+            push_to_s3(self.relative_dest)
+
+    if defaults.USE_S3:
+        def _get_relative_source(self):
+            # Hack.
+            # If first 7 characters of filename are repeated, setup 4 will fail
+            try:
+                start_str = self.relative_dest[:7]
+                return self.source[self.source.find(start_str):]
+            except:
+                return self.source
+        relative_source = property(_get_relative_source)
 
     def _check_source_exists(self):
         """
