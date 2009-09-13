@@ -52,7 +52,7 @@ class Thumbnail(object):
         if self.dest is not None:
             self.generate()
 
-    def generate(self):
+    def generate_local(self):
         """
         Generates the thumbnail if it doesn't exist or if the file date of the
         source file is newer than that of the thumbnail.
@@ -131,6 +131,7 @@ class Thumbnail(object):
             push_to_s3(self.relative_dest)
 
     if defaults.USE_S3:
+        generate = generate_s3
         def _get_relative_source(self):
             # Hack.
             # If first 7 characters of filename are repeated, setup 4 will fail
@@ -140,6 +141,8 @@ class Thumbnail(object):
             except:
                 return self.source
         relative_source = property(_get_relative_source)
+    else:
+        generate = generate_local
 
     def _check_source_exists(self):
         """
