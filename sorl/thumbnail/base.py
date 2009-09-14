@@ -89,7 +89,6 @@ class Thumbnail(object):
         5. If all of that fails, somebody deleted the image, or things have gone fubar'd.
         """
         # Ensure dest(ination) attribute is set
-        import ipdb; ipdb.set_trace() 
         if not self.dest:
             raise ThumbnailException("No destination filename set.")
         
