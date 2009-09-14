@@ -1,5 +1,5 @@
 import os
-from os.path import isfile, isdir, getmtime, dirname, splitext, getsize
+from os.path import isfile, getmtime, splitext, getsize
 from tempfile import mkstemp
 from shutil import copyfile
 from subprocess import Popen, PIPE
@@ -8,6 +8,8 @@ from PIL import Image
 
 from sorl.thumbnail import defaults
 from sorl.thumbnail.processors import get_valid_options, dynamic_import
+
+from utils import check_path
 
 if defaults.USE_S3:
     from utils import push_to_s3, is_on_s3, pull_from_s3
@@ -69,10 +71,7 @@ class Thumbnail(object):
         elif not isfile(self.dest) or (self.source_exists and
             getmtime(self.source) > getmtime(self.dest)):
 
-            # Ensure the directory exists
-            directory = dirname(self.dest)
-            if not isdir(directory):
-                os.makedirs(directory)
+            check_path(self.dest)
 
             self._do_generate()
 
@@ -90,6 +89,7 @@ class Thumbnail(object):
         5. If all of that fails, somebody deleted the image, or things have gone fubar'd.
         """
         # Ensure dest(ination) attribute is set
+        import ipdb; ipdb.set_trace() 
         if not self.dest:
             raise ThumbnailException("No destination filename set.")
         
@@ -119,11 +119,7 @@ class Thumbnail(object):
                         self._source_exists = False
 
                 if self.source_exists:
-                    # Ensure the directory exists
-                    directory = dirname(self.dest)
-                    if not isdir(directory):
-                        os.makedirs(directory)
-
+                    check_path(self.dest)
                     self._do_generate()
                     new_generated = True
 

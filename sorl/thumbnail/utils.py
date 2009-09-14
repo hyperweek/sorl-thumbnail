@@ -20,10 +20,18 @@ def push_to_s3(file_path):
 def is_on_s3(file_path):
     s3_storage = s3.S3Storage() 
     return s3_storage.exists(file_path)
+
+def check_path(path):
+    # Ensure the directory exists
+    directory = os.path.dirname(path)
+    if not os.path.isdir(directory):
+        os.makedirs(directory)
     
 def pull_from_s3(file_path):
     s3_storage = s3.S3Storage()     
-    img_file = open(os.path.join(settings.MEDIA_ROOT, file_path),'w')
+    local_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
+    check_path(local_file_path)
+    img_file = open(local_file_path,'w')
     s3_img_file = s3_storage.open(file_path, 'r')
     img_file.write(s3_img_file.read())
     s3_img_file.close()
