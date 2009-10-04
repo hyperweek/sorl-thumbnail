@@ -14,4 +14,4 @@ PROCESSORS = (
 )
 
 from django.conf import settings
-USE_S3 = 'S3Storage' in settings.DEFAULT_FILE_STORAGE
+USE_S3 = 'S3' in settings.DEFAULT_FILE_STORAGE
