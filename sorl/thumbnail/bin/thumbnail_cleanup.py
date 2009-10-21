@@ -26,17 +26,7 @@ def get_thumbnail_path(path):
 
 
 def clean_up():
-    paths = set()
-    for app in models.get_apps():
-        app_name = app.__name__.split('.')[-2]
-        model_list = models.get_models(app)
-        for model in model_list:
-            for field in model._meta.fields:
-                if isinstance(field, models.ImageField):
-                    #TODO take care of date formatted dirs
-                    if field.upload_to.find("%") == -1:
-                        paths = paths.union((field.upload_to,))
-    paths = list(paths)
+    paths = ['.']
     for path in paths:
         thumbnail_path = get_thumbnail_path(path)
         file_list = os.listdir(os.path.join(settings.MEDIA_ROOT, thumbnail_path))
@@ -61,6 +51,7 @@ def clean_up():
                     org_fn_alt_exists = False
                 if not org_fn_exists and not org_fn_alt_exists:
                     del_me = os.path.join(settings.MEDIA_ROOT, thumbnail_path, fn)
+                    print "Removing: %s" % del_me
                     os.remove(del_me)
 
 
