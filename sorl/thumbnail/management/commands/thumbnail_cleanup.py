@@ -17,5 +17,5 @@ class Command(BaseCommand):
                 if m:
                     del_me = os.path.join(dirpath, f)
                     print "Removing: %s" % del_me
-                    #os.remove(del_me)
+                    os.remove(del_me)
 
