@@ -7,7 +7,7 @@ from django.conf import settings
 re_thumbnail_file = re.compile(r'(?P<source_filename>.+)_(?P<x>\d+)x(?P<y>\d+)(?:_(?P<options>\w+))?_q(?P<quality>\d+)(?:.[^.]+)?$')
 
 if defaults.USE_S3:
-    import storage.backends.s3 as s3
+    import storages.backends.s3 as s3
 
 def push_to_s3(file_path):
     s3_storage = s3.S3Storage()
