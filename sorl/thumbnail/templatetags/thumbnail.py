@@ -3,6 +3,7 @@ import math
 from django.template import Library, Node, VariableDoesNotExist, TemplateSyntaxError
 from sorl.thumbnail.main import DjangoThumbnail, get_thumbnail_setting
 from sorl.thumbnail.processors import dynamic_import, get_valid_options
+from django.core.mail import mail_admins
 
 register = Library()
 
@@ -74,10 +75,11 @@ class ThumbnailNode(Node):
             try:
                 thumbnail = DjangoThumbnail(relative_source, requested_size,
                         opts=self.opts, processors=PROCESSORS, **self.kwargs)
-            except:
+            except Exception, e:
                 if DEBUG:
                     raise
                 else:
+                    mail_admins("Error trying to create thumbnail", e)
                     thumbnail = ''
         # Return the thumbnail class, or put it on the context
         if self.context_name is None:
