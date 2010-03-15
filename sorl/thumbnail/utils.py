@@ -54,7 +54,8 @@ def remove_model_thumbnails(sender, instance, *args, **kwargs):
     for field in instance._meta.fields:
         if isinstance(field, models.ImageField):
             relative_source_path = getattr(instance, field.name).name
-            delete_thumbnails(relative_source_path)
+            if relative_source_path:
+                delete_thumbnails(relative_source_path)
 
 def all_thumbnails(path, recursive=True, prefix=None, subdir=None):
     """
