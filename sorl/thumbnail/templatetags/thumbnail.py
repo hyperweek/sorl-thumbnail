@@ -75,10 +75,6 @@ class ThumbnailNode(Node):
                 thumbnail = DjangoThumbnail(relative_source, requested_size,
                         opts=self.opts, processors=PROCESSORS, **self.kwargs)
             except:
-                DUMMY = get_thumbnail_setting('DUMMY', False)
-                if DUMMY:
-                    DUMMY_SOURCE = get_thumbnail_setting('DUMMY_SOURCE', 'http://dummyimage.com/')
-                    thumbnail = "%s/%sx%s" % (DUMMY_SOURCE, requested_size[0], requested_size[1])
                 if DEBUG:
                     raise
                 else:
