@@ -12,3 +12,5 @@ PROCESSORS = (
     'sorl.thumbnail.processors.scale_and_crop',
     'sorl.thumbnail.processors.filters',
 )
+DUMMY = False
+DUMMY_SOURCE = 'http://dummyimage.com'

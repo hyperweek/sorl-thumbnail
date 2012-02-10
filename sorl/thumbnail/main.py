@@ -58,9 +58,9 @@ class DjangoThumbnail(Thumbnail):
         try:
             self.generate()
         except ThumbnailException:
-            DUMMY = get_thumbnail_setting('DUMMY', False)
+            DUMMY = get_thumbnail_setting('DUMMY')
             if DUMMY:
-                DUMMY_SOURCE = get_thumbnail_setting('DUMMY_SOURCE', 'http://dummyimage.com/')
+                DUMMY_SOURCE = get_thumbnail_setting('DUMMY_SOURCE')
                 self.relative_url = self.absolute_url = "%s/%sx%s" % (DUMMY_SOURCE, requested_size[0], requested_size[1])
             else:
                 raise
