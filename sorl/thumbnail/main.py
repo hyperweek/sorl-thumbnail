@@ -64,11 +64,11 @@ class DjangoThumbnail(Thumbnail):
                 self.relative_url = self.absolute_url = "%s/%sx%s" % (DUMMY_SOURCE, requested_size[0], requested_size[1])
             else:
                 raise
-
-        # Set the relative & absolute url to the thumbnail
-        self.relative_url = \
-            iri_to_uri('/'.join(self.relative_dest.split(os.sep)))
-        self.absolute_url = '%s%s' % (settings.MEDIA_URL, self.relative_url)
+        else:
+            # Set the relative & absolute url to the thumbnail
+            self.relative_url = \
+                iri_to_uri('/'.join(self.relative_dest.split(os.sep)))
+            self.absolute_url = '%s%s' % (settings.MEDIA_URL, self.relative_url)
 
     def _get_relative_thumbnail(self, relative_source,
                                 basedir=None, subdir=None, prefix=None,
