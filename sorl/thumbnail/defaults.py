@@ -15,3 +15,6 @@ PROCESSORS = (
 
 from django.conf import settings
 USE_S3 = 'S3' in settings.DEFAULT_FILE_STORAGE
+
+DUMMY = False
+DUMMY_SOURCE = 'http://dummyimage.com'

@@ -3,7 +3,7 @@ import os
 from django.conf import settings
 from django.utils.encoding import iri_to_uri, force_unicode
 
-from sorl.thumbnail.base import Thumbnail
+from sorl.thumbnail.base import Thumbnail, ThumbnailException
 from sorl.thumbnail.processors import dynamic_import
 from sorl.thumbnail import defaults
 
@@ -55,12 +55,20 @@ class DjangoThumbnail(Thumbnail):
         self.dest = self._absolute_path(self.relative_dest)
 
         # Call generate now that the dest attribute has been set
-        self.generate()
-
-        # Set the relative & absolute url to the thumbnail
-        self.relative_url = \
-            iri_to_uri('/'.join(self.relative_dest.split(os.sep)))
-        self.absolute_url = '%s%s' % (settings.MEDIA_URL, self.relative_url)
+        try:
+            self.generate()
+        except ThumbnailException:
+            DUMMY = get_thumbnail_setting('DUMMY')
+            if DUMMY:
+                DUMMY_SOURCE = get_thumbnail_setting('DUMMY_SOURCE')
+                self.relative_url = self.absolute_url = "%s/%sx%s" % (DUMMY_SOURCE, requested_size[0], requested_size[1])
+            else:
+                raise
+        else:
+            # Set the relative & absolute url to the thumbnail
+            self.relative_url = \
+                iri_to_uri('/'.join(self.relative_dest.split(os.sep)))
+            self.absolute_url = '%s%s' % (settings.MEDIA_URL, self.relative_url)
 
     def _get_relative_thumbnail(self, relative_source,
                                 basedir=None, subdir=None, prefix=None,
